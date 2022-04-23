@@ -1,22 +1,36 @@
-import { Controller, Get, Param, UseGuards, Version } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
+import { User } from "./user.entity";
+import { UsersService } from "./users.service";
+import { UserDto } from "./user-dto";
 
 @Controller({ path: '/users', version: '1' })
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-    @Get()
-    findAll(): string {
-        return 'This action returns all users'
+    constructor(private usersService: UsersService) {
     }
 
+    @Post()
+    create(@Body() userDto: UserDto): Promise<User> {
+        return this.usersService.create(userDto);
+    }
     @Get()
-    @Version('2')
-    findAllv2(): string {
-        return 'This new v2 action returns all users'
-    } // This is a GET request
+    findAll(): Promise<User[]> {
+        return this.usersService.findAll();
+    }
 
     @Get('/:id')
-    findOne(@Param('id') id: string): string {
-        return `This action returns user #${id}`
-    } // This is a GET request
+    findOne(@Param('id') id: string): Promise<User> {
+        return this.usersService.findById(parseInt(id,10));
+    }
+
+    @Delete()
+    remove(@Param('id') id: string): Promise<void> {
+        return this.usersService.remove(id);
+    }
+
+    @Put()
+    update(@Body() body): Promise<User>  {
+        return this.usersService.update(body);
+    }
 }

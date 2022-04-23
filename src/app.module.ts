@@ -1,24 +1,35 @@
 import { Module } from '@nestjs/common'
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
+import { ConfigModule } from "@nestjs/config";
 import { UsersModule } from './users/users.module'
-import { AuthService } from './auth/auth.service'
 import { AuthModule } from './auth/auth.module'
-import { UsersService } from './users/users.service'
-import { JwtModule } from '@nestjs/jwt'
-import * as dotenv from 'dotenv'
-dotenv.config()
+import { ThrottlerModule } from "@nestjs/throttler";
+import { TypeOrmModule } from '@nestjs/typeorm';
+import configuration from './config/configuration';
+import { User } from "./users/user.entity";
+
 
 @Module({
     imports: [
-        UsersModule,
-        AuthModule,
-        JwtModule.register({
-            secret: process.env.SECRET,
-            signOptions: { expiresIn: '600s' },
+        ConfigModule.forRoot({
+            isGlobal: true,
+            load: [configuration],
         }),
+        ThrottlerModule.forRoot({
+            ttl: 60,
+            limit: 10,
+        }),
+        TypeOrmModule.forRoot({
+            type: 'mysql',
+            host:  process.env.DATABASE_HOST,
+            port:  parseInt(process.env.DATABASE_PORT, 10),
+            username: process.env.DATABASE_USERNAME,
+            password: process.env.DATABASE_PASSWORD,
+            database: process.env.DATABASE_DBNAME,
+            entities: [User],
+            synchronize: true,
+        }),
+        AuthModule,
+        UsersModule,
     ],
-    controllers: [AppController],
-    providers: [AppService, AuthService, UsersService],
 })
 export class AppModule {}

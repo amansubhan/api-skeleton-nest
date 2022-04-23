@@ -1,21 +1,22 @@
-import { NestFactory } from '@nestjs/core'
-import { AppModule } from './app.module'
-import * as dotenv from 'dotenv'
-import * as compression from 'compression'
-import { VersioningType } from '@nestjs/common'
-dotenv.config()
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import * as compression from "compression";
+import { VersioningType } from "@nestjs/common";
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule, {
-        cors: true,
-        logger: ['error', 'warn', 'log', 'debug', 'verbose'],
-    })
-    app.enableVersioning({
-        type: VersioningType.URI,
-    })
+  const app = await NestFactory.create(AppModule, {
+    logger: ["error", "warn", "log"]
+  });
+  app.enableCors();
+  app.enableVersioning({
+    type: VersioningType.URI
+  });
 
-    app.use(compression())
+  app.use(compression());
 
-    await app.listen(process.env.PORT)
+  await app.listen(process.env.PORT);
 }
-bootstrap()
+
+bootstrap().then(() => {
+  console.log(`${process.env.ENV} server started on port: ${process.env.PORT}`);
+});
